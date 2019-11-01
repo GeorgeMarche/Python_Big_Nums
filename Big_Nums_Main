@@ -1,0 +1,127 @@
+#####################################
+# CLASS BigNums                     #
+# __________________________________#
+# A simple program to perform       #
+# operations on larger numbers      #
+# (More useful for Java and C++)    #                 
+#                                   #
+# Author: George Marche             #
+# Modified: 10/20/2019              #
+#####################################
+
+# REGEX NECESSARY TO ASSURE STRING IS A NUMBER
+import re
+
+class BigNum:
+    
+    def __init__(self, num_str):
+        self._num = []
+        self._pos = True
+        num_check = r"[-]?[0-9]+"
+        if re.match(num_check, num_str):
+            for i in range(len(num_str)):
+                if i == 0 and num_str[i] == '-':
+                    self._pos = False
+                    continue
+                self._num.insert(0,int(num_str[i]))
+        else:
+            raise TypeError("Error: this is not a number!")
+        
+    def max_bn(self, bn):
+        if len(self._num) > len(bn._num):
+            return self
+        elif len(self._num) == len(bn._num):
+            i = len(self._num) - 1
+            while i >= 0:
+                if (self._num[i] > bn._num[i]):
+                    return self
+                    break
+                elif (self._num[i] < bn._num[i]):
+                    return bn
+                    break
+                i -= 1
+        else:
+            return bn
+            
+    def min_bn(self, bn):
+        if len(self._num) < len(bn._num):
+            return self
+        elif len(self._num) == len(bn._num):
+            i = len(self._num) - 1
+            while i >= 0:
+                if (self._num[i] < bn._num[i]):
+                    return self
+                    break
+                elif (self._num[i] > bn._num[i]):
+                    return bn
+                    break
+                i -= 1
+        else:
+            return bn
+           
+    def __add__(self, bn): 
+        min = self.min_bn(bn)
+        max = self.max_bn(bn)
+        if max._pos == True and min._pos == False:
+            min._pos = True
+            return max.__sub__(min)
+        elif max._pos == False and min._pos == True:
+            min._pos = False
+            return max.__sub__(min)
+        else:
+            for i in range(len(min._num)):
+                max._num[i] += min._num[i]
+            for i in range(len(max._num)):
+                if max._num[i] >= 10:
+                    max._num[i] -= 10
+                    if i + 1 < len(max._num):
+                        max._num[i+1] += 1
+                    else:
+                        max._num.insert(i+1,1)
+            
+        return max
+        
+    def __sub__(self, bn):
+        if self._pos == True and bn._pos == False:
+            bn._pos = True
+            return self.__add__(bn)
+        elif self._pos == False and bn._pos == True:
+            bn._pos = False
+            return self.__add__(bn)
+        if bn._num == self.max_bn(bn)._num:
+            bn._pos = not bn._pos
+            return bn.__add__(self)
+        else:
+            for i in range(len(bn._num)):
+                self._num[i] -= bn._num[i]
+                if self._num[i] < 0:
+                    self._num[i] += 10
+                    self._num[i+1] -= 1
+            i = len(self._num) - 1
+            while i >= 0:
+                if self._num[i] == 0:
+                    del self._num[i]
+                else:
+                    break
+                i -= 1
+            return self
+    
+    def __mul__(self, bn):
+        new_bn = BigNum("0"*(len(self._num) + len(bn._num)))
+        if self._pos == bn._pos:
+            new_bn._pos = True
+        else:
+            new_bn._pos = False
+        for i in range(len(self._num)):
+            for j in range(len(bn._num)):
+                prod = self._num[i]*bn._num[j]
+                if prod > 9:
+                    new_bn._num[i+j] += prod % 10
+                    new_bn._num[i+j+1] += (prod - (prod % 10)) / 10
+        for i in range(len(new_bn._num)):
+            n = new_bn._num[i]
+            if n > 9:
+                new_bn._num[i] -= n - (n % 10)
+                new_bn._num[i+1] += (n - (n % 10)) / 10
+        return new_bn
+        
